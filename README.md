@@ -1,5 +1,8 @@
 # 喵 (Mao) · 发布通道
 
+[![downloads](https://img.shields.io/github/downloads/solaswing/avatar-releases/total?color=F2814A&label=%E4%B8%8B%E8%BD%BD%E6%80%BB%E6%95%B0)](https://github.com/solaswing/avatar-releases/releases/latest)
+[![latest](https://img.shields.io/github/v/release/solaswing/avatar-releases?color=6FE0A8&label=%E6%9C%80%E6%96%B0%E7%89%88)](https://github.com/solaswing/avatar-releases/releases/latest)
+
 一只浮在 macOS 桌面上的 Live2D 伙伴 —— 有脸、会陪你、记得住你，还能连上你的 App 和网页帮你干活。默认全在本地。
 
 本仓库是「喵」的**公开发布通道**，只托管两样东西：

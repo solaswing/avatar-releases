@@ -30,7 +30,7 @@
 
 ## 2. 安装 / 启动 / 退出
 
-**安装**：去 [Releases](https://github.com/solaswing/avatar-releases/releases/latest) 下最新的 `Mao-x.y.z.dmg` → 打开 DMG → 把里面的 App 拖进「应用程序」。已 Developer ID 签名 + Apple 公证，干净 Mac 双击即用，**不会有 Gatekeeper 警告**。
+**安装**：去 [Releases](https://github.com/solaswing/avatar-releases/releases/latest) 下最新的 `Miao-x.y.z.dmg` → 打开 DMG → 把里面的 App 拖进「应用程序」。已 Developer ID 签名 + Apple 公证，干净 Mac 双击即用，**不会有 Gatekeeper 警告**。
 
 **启动**：从启动台 / 应用程序双击打开。第一次会弹「认识喵」引导（见 §1.5）；想开机自启，设置 → 通用 → 登录自启。
 

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>desktop-avatar-renderer</title>
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+      background: transparent;
+      overscroll-behavior: none;
+      touch-action: none;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+    }
+
+    /* ---------- Energy-orb loading / transition overlay ---------- */
+    /*
+     * Visible by default. main.ts hides it once the Cubism model
+     * reports its first rendered frame (window.desktopAvatarReady).
+     * Lives directly in index.html so the orb paints immediately on
+     * page load, before vite-bundled JS evaluates — this is what
+     * gives "model is loading" feedback even during a cold WebKit
+     * cache (~1.5–2s before Cubism first frame).
+     *
+     * The Swift host expands the avatar window to 400×500 while the
+     * orb is showing, so we size the orb to that footprint (300px
+     * outer ring + halo, ~360px diameter).
+     *
+     * Color theming: body gets `orb-<color>` class from main.ts
+     * (driven by URL `?orb=` query). Each class overrides the CSS
+     * variables below; rgba(var(--orb-X), a) computes the final
+     * stops at runtime.
+     */
+
+    /* Default palette = neutral cyan/white (fallback). */
+    body {
+      --orb-core1: 255, 255, 255;
+      --orb-core2: 200, 240, 255;
+      --orb-core3: 120, 200, 255;
+      --orb-glow:  120, 200, 255;
+      --orb-halo:  80, 160, 255;
+      --orb-ring:  180, 230, 255;
+      --orb-bright: 255, 255, 255;
+      --orb-burst-scale: 1.8;
+    }
+
+    /* Mao — dashboard peach (#FFB088). Keep orb-orange as a legacy alias. */
+    body.orb-peach,
+    body.orb-orange {
+      --orb-core1: 255, 250, 246;
+      --orb-core2: 255, 220, 198;
+      --orb-core3: 255, 176, 136;
+      --orb-glow:  255, 176, 136;
+      --orb-halo:  201, 122, 82;
+      --orb-ring:  255, 210, 184;
+      --orb-bright: 255, 244, 235;
+    }
+
+    /* HaruGreeter — soft pink (cheerful greeter). */
+    body.orb-pink {
+      --orb-core1: 255, 250, 250;
+      --orb-core2: 255, 225, 235;
+      --orb-core3: 255, 130, 175;
+      --orb-glow:  255, 120, 165;
+      --orb-halo:  225, 80, 130;
+      --orb-ring:  255, 200, 220;
+      --orb-bright: 255, 240, 245;
+    }
+
+    /* Nahida — dashboard sky (#5FB6FF). Keep orb-green as a legacy alias. */
+    body.orb-sky,
+    body.orb-green {
+      --orb-core1: 246, 251, 255;
+      --orb-core2: 205, 232, 255;
+      --orb-core3: 95, 182, 255;
+      --orb-glow:  95, 182, 255;
+      --orb-halo:  43, 124, 196;
+      --orb-ring:  180, 220, 255;
+      --orb-bright: 240, 249, 255;
+    }
+
+    /* Villhaze — violet (refined / mystic). */
+    body.orb-purple {
+      --orb-core1: 252, 248, 255;
+      --orb-core2: 225, 210, 250;
+      --orb-core3: 165, 110, 240;
+      --orb-glow:  155, 100, 230;
+      --orb-halo:  110, 60, 195;
+      --orb-ring:  205, 185, 245;
+      --orb-bright: 240, 230, 255;
+    }
+
+    /* Kara — dashboard mint (#6FE0A8). Keep orb-red as a legacy alias. */
+    body.orb-mint,
+    body.orb-red {
+      --orb-core1: 248, 255, 252;
+      --orb-core2: 210, 250, 230;
+      --orb-core3: 111, 224, 168;
+      --orb-glow:  111, 224, 168;
+      --orb-halo:  61, 199, 135;
+      --orb-ring:  190, 246, 218;
+      --orb-bright: 239, 255, 247;
+    }
+
+    .energy-orb {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.45s cubic-bezier(0.4, 0, 0.6, 1),
+                  transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: opacity, transform;
+    }
+
+    .energy-orb.orb-burst {
+      opacity: 0;
+      transform: scale(var(--orb-burst-scale));
+    }
+
+    /* "Summoning" state: starts small + invisible, then JS removes
+     * the class so CSS transitions it back to default (full scale,
+     * visible). Used when a model switch dissolves the old avatar
+     * INTO the orb. */
+    .energy-orb.orb-summoning {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+
+    .energy-orb.orb-hidden {
+      display: none;
+    }
+
+    .orb-core {
+      position: absolute;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(var(--orb-core1), 1.0) 0%,
+        rgba(var(--orb-core2), 0.95) 25%,
+        rgba(var(--orb-core3), 0.55) 55%,
+        rgba(var(--orb-halo),  0)    80%);
+      filter: blur(1px);
+      box-shadow: 0 0 60px 20px rgba(var(--orb-glow), 0.45),
+                  0 0 120px 50px rgba(var(--orb-halo), 0.2);
+      animation: orb-pulse 1.8s ease-in-out infinite;
+    }
+
+    .orb-ring {
+      position: absolute;
+      border-radius: 50%;
+      border-style: solid;
+      box-sizing: border-box;
+    }
+
+    .orb-ring-1 {
+      width: 170px;
+      height: 170px;
+      border-width: 2px;
+      border-color: rgba(var(--orb-ring), 0.18) rgba(var(--orb-ring), 0.18)
+                    rgba(var(--orb-ring), 0.18) rgba(var(--orb-bright), 0.9);
+      animation: orb-spin 1.6s linear infinite;
+    }
+
+    .orb-ring-2 {
+      width: 230px;
+      height: 230px;
+      border-width: 1.5px;
+      border-color: rgba(var(--orb-ring), 0.1) rgba(var(--orb-bright), 0.7)
+                    rgba(var(--orb-ring), 0.1) rgba(var(--orb-ring), 0.1);
+      animation: orb-spin-rev 2.6s linear infinite;
+    }
+
+    .orb-ring-3 {
+      width: 300px;
+      height: 300px;
+      border-width: 1px;
+      border-color: rgba(var(--orb-ring), 0.4) transparent
+                    rgba(var(--orb-ring), 0.05) transparent;
+      animation: orb-spin 3.8s linear infinite;
+    }
+
+    .orb-particles {
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      animation: orb-spin 5s linear infinite;
+    }
+
+    .orb-particles::before,
+    .orb-particles::after,
+    .orb-particles span {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(var(--orb-bright), 0.95);
+      box-shadow: 0 0 8px 2px rgba(var(--orb-ring), 0.9);
+      top: 50%;
+      left: 50%;
+      margin: -3px 0 0 -3px;
+    }
+
+    .orb-particles::before {
+      content: '';
+      transform: rotate(0deg) translateY(-130px);
+    }
+    .orb-particles::after {
+      content: '';
+      transform: rotate(120deg) translateY(-130px);
+    }
+    .orb-particles span {
+      transform: rotate(240deg) translateY(-130px);
+    }
+
+    @keyframes orb-pulse {
+      0%, 100% {
+        transform: scale(0.92);
+        opacity: 0.85;
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+      }
+    }
+
+    @keyframes orb-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes orb-spin-rev {
+      to { transform: rotate(-360deg); }
+    }
+
+    /*
+     * Desktop-avatar orb — the host window deliberately keeps a narrow
+     * noninteractive visual shell around the character. The full-size
+     * 300px ring plus a 1.8× burst is too large there, so this branch
+     * keeps model-switch transitions inside the current visual window.
+     */
+    @media (max-width: 380px) {
+      body {
+        --orb-burst-scale: 1.28;
+      }
+      .orb-core {
+        width: 64px;
+        height: 64px;
+        box-shadow: 0 0 24px 6px rgba(var(--orb-glow), 0.5),
+                    0 0 48px 14px rgba(var(--orb-halo), 0.22);
+      }
+      .orb-ring-1 {
+        width: 118px;
+        height: 118px;
+        border-width: 1.5px;
+      }
+      .orb-ring-2 {
+        width: 168px;
+        height: 168px;
+        border-width: 1.2px;
+      }
+      .orb-ring-3 {
+        width: 224px;
+        height: 224px;
+        border-width: 1px;
+      }
+      .orb-particles {
+        width: 190px;
+        height: 190px;
+      }
+      .orb-particles::before,
+      .orb-particles::after,
+      .orb-particles span {
+        width: 5px;
+        height: 5px;
+        box-shadow: 0 0 6px 1.5px rgba(var(--orb-ring), 0.9);
+        margin: -2.5px 0 0 -2.5px;
+      }
+      .orb-particles::before {
+        transform: rotate(0deg) translateY(-95px);
+      }
+      .orb-particles::after {
+        transform: rotate(120deg) translateY(-95px);
+      }
+      .orb-particles span {
+        transform: rotate(240deg) translateY(-95px);
+      }
+    }
+  </style>
+  <script src="./Core/live2dcubismcore.js"></script>
+  <script type="module" crossorigin src="./assets/index-ilVGmCfB.js"></script>
+</head>
+<body>
+  <div id="energy-orb" class="energy-orb">
+    <div class="orb-core"></div>
+    <div class="orb-ring orb-ring-3"></div>
+    <div class="orb-ring orb-ring-2"></div>
+    <div class="orb-ring orb-ring-1"></div>
+    <div class="orb-particles"><span></span></div>
+  </div>
+</body>
+</html>

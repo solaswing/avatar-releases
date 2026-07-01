@@ -50,10 +50,10 @@
   .note{font-size:13px;color:var(--ink-soft)}
 
   /* ── hero:活的 Live2D Mao(渲染器 iframe,透明 canvas → Mao 浮在页面上,会 idle 动)── */
-  .stage{position:relative;min-height:460px;display:flex;align-items:center;justify-content:center}
-  .mao-frame{position:relative;z-index:2;width:min(330px,84vw);aspect-ratio:330/456}
+  .stage{position:relative;min-height:500px;display:flex;align-items:flex-end;justify-content:center}
+  .mao-frame{position:relative;z-index:2;width:min(290px,78vw);aspect-ratio:330/456}
   .mao-live{width:100%;height:100%;border:0;background:transparent;display:block}
-  .bubble{position:absolute;z-index:3;top:2px;right:-4px;background:#fff;border:1px solid var(--stroke);border-radius:18px;padding:14px 16px;max-width:222px;box-shadow:var(--shadow);font-size:14px}
+  .bubble{position:absolute;z-index:3;top:6px;right:-8px;background:#fff;border:1px solid var(--stroke);border-radius:18px;padding:14px 16px;max-width:208px;box-shadow:var(--shadow);font-size:14px}
   .bubble b{color:var(--peach-deep)}
   .bubble .who{font-size:12px;color:var(--ink-soft);margin-bottom:3px}
   .bubble::after{content:"";position:absolute;left:24px;bottom:-9px;width:18px;height:18px;background:#fff;border-right:1px solid var(--stroke);border-bottom:1px solid var(--stroke);transform:rotate(45deg)}

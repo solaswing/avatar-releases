@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>喵 · 跟社交软件反着来的桌面伴侣</title>
-<meta name="description" content="喵是住在你桌面上的 Live2D 数字人 —— 你的桌面同事、工作助手、AI 伴侣。简单的活(查文件/播热点/定闹钟/操作软件)一句话就办,专业的活(搜资料/画画/写作/分析表格)也能上手。本地优先、私密、有脸。">
+<meta name="description" content="喵是住在你桌面上的 3D VRM 数字人 —— 你的桌面同事、工作助手、AI 伴侣。简单的活(查文件/播热点/定闹钟/操作软件)一句话就办,专业的活(搜资料/画画/写作/分析表格)也能上手。本地优先、私密、有脸。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="喵 · 跟社交软件反着来的桌面伴侣">
 <meta property="og:description" content="你的桌面同事、工作助手、AI 伴侣。简单的活一句话办,专业的活也能上手。本地优先、私密、有脸。">
-<meta property="og:image" content="https://solaswing.github.io/avatar-releases/img/mao.png">
+<meta property="og:image" content="https://solaswing.github.io/avatar-releases/img/miao-vrm.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://solaswing.github.io/avatar-releases/img/mao.png">
+<meta name="twitter:image" content="https://solaswing.github.io/avatar-releases/img/miao-vrm.png">
 <style>
   :root{
     --bg:#FBF6EE; --bg2:#F4ECDF; --ink:#2C2722; --ink-soft:#6E655A;
@@ -49,10 +49,10 @@
   .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
   .note{font-size:13px;color:var(--ink-soft)}
 
-  /* ── hero:活的 Live2D Mao(渲染器 iframe,透明 canvas → Mao 浮在页面上,会 idle 动)── */
+  /* ── hero:3D VRM 喵静态图(透明底,浮在页面上)── */
   .stage{position:relative;min-height:500px;display:flex;align-items:flex-end;justify-content:center}
-  .mao-frame{position:relative;z-index:2;width:min(290px,78vw);aspect-ratio:330/456}
-  .mao-live{width:100%;height:100%;border:0;background:transparent;display:block}
+  .mao-frame{position:relative;z-index:2;width:min(232px,62vw);aspect-ratio:348/900}
+  .mao-live{width:100%;height:100%;border:0;background:transparent;display:block;object-fit:contain}
   .bubble{position:absolute;z-index:3;top:6px;right:-8px;background:#fff;border:1px solid var(--stroke);border-radius:18px;padding:14px 16px;max-width:208px;box-shadow:var(--shadow);font-size:14px}
   .bubble b{color:var(--peach-deep)}
   .bubble .who{font-size:12px;color:var(--ink-soft);margin-bottom:3px}
@@ -152,7 +152,7 @@
     <p class="note" style="margin-top:14px">macOS · Apple Silicon · 本地能聊 · 数据在你机器上</p>
   </div>
   <div class="stage">
-    <div class="mao-frame"><iframe class="mao-live" src="avatar/index.html" title="喵 · 数字人演示" scrolling="no"></iframe></div>
+    <div class="mao-frame"><img class="mao-live" src="img/miao-vrm.png" alt="喵 · 3D VRM 数字人"></div>
     <div class="bubble">
       <div class="who">喵</div>
       早呀老大～外面下雨呢 ☔️ 窝在电脑前的话,要我放首<b>雨天电台</b>陪你吗?
@@ -301,7 +301,7 @@
 
 <footer><div class="wrap">
   <div>© 2026 喵 (Miao · Desktop Avatar)。一个不社交的桌面伴侣。</div>
-  <div>Live2D Cubism 模型 Mao 由 Live2D Inc. 提供 · Live2D® Cubism® is a trademark of Live2D Inc.</div>
+  <div>数字人由 three-vrm（MIT）渲染 · VRM / VRoid 模型与动作版权归各自作者。</div>
 </div></footer>
 
 </body>

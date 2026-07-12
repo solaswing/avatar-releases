@@ -2,5 +2,5 @@
   "version": "0.5.0",
   "build": "202607130123",
   "url": "https://github.com/solaswing/avatar-releases/releases/latest",
-  "notes": "v0.5.0 来啦～修复与体验优化，点下载更新到最新版。"
+  "notes": "v0.5.0：数字人从 Live2D 全面升级成 3D VRM（可导入任意 .vrm 模型）～还有全新角色卡、鼠标动态穿透、情绪/动作系统重做。点下载更新到最新版。"
 }
